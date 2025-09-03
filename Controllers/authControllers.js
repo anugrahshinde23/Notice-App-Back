@@ -6,10 +6,10 @@ require('dotenv').config();
 
 
 const register = async(req,res) =>{
-    const {name,password,role} = req.body
+    const {name,password,role, college_id, class_id} = req.body
 
     
-
+try{
     const checkName = await db.query(`SELECT * FROM users WHERE name=$1`,[name]);
 
     if(checkName.rows.length > 0){
@@ -19,9 +19,14 @@ const register = async(req,res) =>{
     }
     const hashedPassword = await bcrypt.hash(password,10);
 
-    const result = await db.query(`INSERT INTO users(name,role,password) VALUES($1,$2,$3) RETURNING*`,[name,role,hashedPassword]);
+    const result = await db.query(`INSERT INTO users(name,role,password,college_id,class_id) VALUES($1,$2,$3,$4,$5) RETURNING*`,[name,role,hashedPassword,college_id,class_id]);
 
     res.status(200).json({message : "user registered", user : result.rows[0]});
+} catch(err){
+    console.error(err);
+    res.status(500).json({message : "Error signing in "})
+}
+
 }
 
 const login = async(req,res) =>{

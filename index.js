@@ -10,9 +10,11 @@ app.use(express.json());
 
 const noticeRoutes = require('./Routes/noticeRoutes')
 const authRoutes = require('./Routes/authRoutes')
+const collegeRoutes = require('./Routes/collegesRoutes')
 
 app.use('/api',authRoutes)
 app.use('/notice',noticeRoutes)
+app.use('/info',collegeRoutes)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const port = 1000;

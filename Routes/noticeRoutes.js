@@ -19,7 +19,7 @@ const path = require('path');
 
 // router.post('/upload', upload.single("file"),uploadNotice);
 router.post('/create',upload.single("file"),create);
-router.get('/get',get);
+router.get('/get/:college_id/:class_id',get);
 router.put('/edit/:id',edit)
 router.delete('/delete/:id',remove)
 

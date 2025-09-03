@@ -52,8 +52,9 @@ const create = async (req, res) => {
  * Get All Notices
  */
 const get = async (req, res) => {
+  const {college_id,class_id} = req.params;
   try {
-    const result = await db.query(`SELECT * FROM notices ORDER BY created_at DESC`);
+    const result = await db.query(`SELECT * FROM notices WHERE college_id=$1 and (class_id IS NULL OR class_id=$2) ORDER BY created_at DESC`,[college_id,class_id]);
     res
       .status(200)
       .json({ message: "fetched successfully", allnotice: result.rows });
