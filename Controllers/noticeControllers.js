@@ -59,51 +59,31 @@ const create = async (req, res) => {
            VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
           [title, content, createdBy, filePath, college_id, classId, category]
         );
-// Notification logic
-let students;
 
-if (classId) {
-  // Class specific notice
-  students = await db.query(
-    `SELECT id, fcm_token 
-     FROM users 
-     WHERE college_id=$1 AND class_id=$2 AND role=$3`,
-    [college_id, classId, 'student']
-  );
-} else {
-  // General college notice (class_id NULL)
-  students = await db.query(
-    `SELECT id, fcm_token 
-     FROM users 
-     WHERE college_id=$1 AND role=$2`,
-    [college_id, 'student']
-  );
-}
+    const students = await db.query(`SELECT id, fcm_token FROM users WHERE college_id=$1 and class_id=$2 and role=$3`,[college_id,classId,'student']);
 
-const studentTokens = students.rows
-  .map((s) => s.fcm_token)
-  .filter((t) => t); // null tokens hata de
+    const tokens = students.rows.map(s => s.fcm_token).filter(token => token) // only non null tokens.
 
-if (studentTokens.length > 0) {
-  const message = {
-    notification: {
-      title: "New Notice 📢",
-      body: `${title} - ${description}`,
-    },
-    tokens: studentTokens,
+    if(tokens.length > 0){
+      const message = {
+        notification : {
+          title : 'New Notice',
+          body : title,
+        },
+        tokens : tokens,
+        data : {
+          noticeId : result.rows[0].id.toString(),
+        }
+      };
+
+      admin.messaging().sendEachForMulticast(message).then(response => {
+        console.log("Successfully sent Message", response.successCount)
+      })
+      .catch(err => console.log("Error sending message", err));
+    }
+
     
-  };
-
-  try {
-    const response = await admin.messaging().sendMulticast(message);
-    console.log("✅ Notifications sent:", response.successCount);
-    console.log("❌ Failed:", response.failureCount);
-  } catch (error) {
-    console.error("🔥 Error sending notifications:", error);
-  }
-} else {
-  console.log("ℹ️ No students found to send notifications.");
-}
+   
     
 
     
