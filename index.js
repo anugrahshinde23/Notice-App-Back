@@ -10,6 +10,10 @@ require('dotenv').config();
 app.use(cors())
 app.use(express.json());
 
+app.get('/health',(req,res) =>{
+    res.send("Backend is live!")
+})
+
 const noticeRoutes = require('./Routes/noticeRoutes')
 const authRoutes = require('./Routes/authRoutes')
 const collegeRoutes = require('./Routes/collegesRoutes')
