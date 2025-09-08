@@ -12,7 +12,7 @@ app.use(cors())
 app.use(express.json());
 
 app.get('/health',(req,res) =>{
-    res.send("Backend is live!")
+    res.send("Backend is running bhaiii thank god")
 })
 
 const noticeRoutes = require('./Routes/noticeRoutes')
