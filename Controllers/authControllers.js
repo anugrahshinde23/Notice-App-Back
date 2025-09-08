@@ -44,7 +44,7 @@ const login = async(req,res) =>{
         return res.status(200).json({message:"password is incorrect"});
     }
 
-    const token =  jwt.sign({id : user.id, name : user.name}, process.env.JWT_SECRET, {expiresIn : '1d'});
+    const token =  jwt.sign({id : user.id, name : user.name, role : user.role, college_id : user.college_id, class_id : user.class_id}, process.env.JWT_SECRET, {expiresIn : '1d'});
     res.json({message : "login sucessfully", token,user})
 
 }
