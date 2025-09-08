@@ -4,6 +4,7 @@ const cors = require('cors')
 const path = require('path')
 const {Server} = require('socket.io')
 const http = require('http');
+const admin = require('./firebase')
 
 
 require('dotenv').config();
