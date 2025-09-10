@@ -73,6 +73,8 @@ const create = async (req, res) => {
         const content_hi = await translateText(content, "hi");
         const content_mr = await translateText(content, "mr");
 
+        console.log(title_hi);
+
         const result = await db.query(
           `INSERT INTO notices(title, content, created_by, file_path, college_id, class_id, category,title_hi, title_mr, content_hi, content_mr) 
            VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11) RETURNING *`,
