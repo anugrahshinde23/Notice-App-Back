@@ -1,5 +1,5 @@
 const express = require('express');
-const { create, get, edit, remove, upload, markAsRead } = require('../Controllers/noticeControllers');
+const { create, get, edit, remove, upload, markAsRead, searchNotice } = require('../Controllers/noticeControllers');
 const router = express.Router();
 const multer = require('multer');
 const { uploadNotice } = require('../Controllers/authControllers');
@@ -23,5 +23,6 @@ router.get('/get/:college_id/:class_id/:student_id',get);
 router.put('/edit/:id',edit)
 router.delete('/delete/:id',remove)
 router.post('/mark-read',markAsRead)
+router.get('/search', searchNotice)
 
 module.exports = router
