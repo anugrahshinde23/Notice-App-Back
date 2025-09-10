@@ -7,6 +7,7 @@ const categorizeNotice = require("../functions/categorizeNotice");
 const { measureMemory } = require("vm");
 const admin = require('../firebase');
 const { response } = require("express");
+const translate = require('@vitalets/google-translate-api')
 
 // Uploads folder ensure karna
 const uploadDir = path.join(__dirname, "..", "uploads");
@@ -52,12 +53,17 @@ const create = async (req, res) => {
         : parseInt(class_id);
         
         const category = categorizeNotice(title,content);  
+        
+        const thi = await translate(title, {to : "hi"});
+        const tmr = await translate(title, {to : "mr"});
+        const hi = await translate(content, { to: "hi" });
+        const mr = await translate(content, { to: "mr" });
 
 
         const result = await db.query(
-          `INSERT INTO notices(title, content, created_by, file_path, college_id, class_id, category) 
-           VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-          [title, content, createdBy, filePath, college_id, classId, category]
+          `INSERT INTO notices(title, content, created_by, file_path, college_id, class_id, category,title_hi, title_mr, content_hi, content_mr) 
+           VALUES($1, $2, $3, $4, $5, $6, $7 $8,$9,$10,$11) RETURNING *`,
+          [title, content, createdBy, filePath, college_id, classId, category, thi.text,tmr.text,hi.text,mr.text]
         );
 
     const students = await db.query(`SELECT id, fcm_token FROM users WHERE college_id=$1 and class_id=$2 and role=$3`,[college_id,classId,'student']);
@@ -208,37 +214,6 @@ const searchNotice = async (req, res) => {
 };
 
 
-// backend temporary route (deploy ke baad remove kar dena)
-const  allNotices = async(req,res) => {
-
-  try{
-  const result = await db.query(
-    "SELECT id, content, title FROM notices WHERE content_hi IS NULL OR content_mr IS NULL"
-  );
-
-  for (const notice of result.rows) {
-    const hi = await translate(notice.content, { to: "hi" });
-    const mr = await translate(notice.content, { to: "mr" });
-
-    const thi = await translate(notice.title, {to: "hi"});
-    const tmr = await translate(notice.title, {to: "mr"});
-
-    await db.query(
-      "UPDATE notices SET content_hi=$1, content_mr=$2, title_hi=$3, title_mr=$4 WHERE id=$5",
-      [hi.text, mr.text,thi.text,tmr.text, notice.id]
-    );
-  }
-
-  res.json({ message: "All existing notices translated!" });
-} catch (err) {
-  res.status(500).json({ error: err.message });
-}
-}
-
-
-
-
-
     
 
 module.exports = {
@@ -249,5 +224,5 @@ module.exports = {
   upload,
   markAsRead,
   searchNotice,
-  allNotices
+
 };

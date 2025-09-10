@@ -24,6 +24,6 @@ router.put('/edit/:id',edit)
 router.delete('/delete/:id',remove)
 router.post('/mark-read',markAsRead)
 router.get('/search', searchNotice)
-router.post('/translate-all-notices',allNotices)
+
 
 module.exports = router
