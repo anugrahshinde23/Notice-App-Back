@@ -7,7 +7,7 @@ const categorizeNotice = require("../functions/categorizeNotice");
 const { measureMemory } = require("vm");
 const admin = require('../firebase');
 const { response } = require("express");
-const translate = require('@vitalets/google-translate-api')
+const translate = require('@vitalets/google-translate-api').default
 
 // Uploads folder ensure karna
 const uploadDir = path.join(__dirname, "..", "uploads");
