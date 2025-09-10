@@ -212,7 +212,7 @@ const searchNotice = async (req, res) => {
 const  allNotices = async(req,res) => {
 
   try{
-  const result = await pool.query(
+  const result = await db.query(
     "SELECT id, content, title FROM notices WHERE content_hi IS NULL OR content_mr IS NULL"
   );
 
@@ -223,7 +223,7 @@ const  allNotices = async(req,res) => {
     const thi = await translate(notice.title, {to: "hi"});
     const tmr = await translate(notice.title, {to: "mr"});
 
-    await pool.query(
+    await db.query(
       "UPDATE notices SET content_hi=$1, content_mr=$2, title_hi=$3, title_mr=$4 WHERE id=$5",
       [hi.text, mr.text,thi.text,tmr.text, notice.id]
     );
