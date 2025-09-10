@@ -73,7 +73,7 @@ const create = async (req, res) => {
 
         const result = await db.query(
           `INSERT INTO notices(title, content, created_by, file_path, college_id, class_id, category,title_hi, title_mr, content_hi, content_mr) 
-           VALUES($1, $2, $3, $4, $5, $6, $7 $8,$9,$10,$11) RETURNING *`,
+           VALUES($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11) RETURNING *`,
           [title, content, createdBy, filePath, college_id, classId, category, title_hi, title_mr, content_hi, content_mr]
         );
 
