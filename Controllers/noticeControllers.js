@@ -208,6 +208,38 @@ const searchNotice = async (req, res) => {
 };
 
 
+// backend temporary route (deploy ke baad remove kar dena)
+const  allNotices = async(req,res) => {
+
+  try{
+  const result = await pool.query(
+    "SELECT id, content, title FROM notices WHERE content_hi IS NULL OR content_mr IS NULL"
+  );
+
+  for (const notice of result.rows) {
+    const hi = await translate(notice.content, { to: "hi" });
+    const mr = await translate(notice.content, { to: "mr" });
+
+    const thi = await translate(notice.title, {to: "hi"});
+    const tmr = await translate(notice.title, {to: "mr"});
+
+    await pool.query(
+      "UPDATE notices SET content_hi=$1, content_mr=$2, title_hi=$3, title_mr=$4 WHERE id=$5",
+      [hi.text, mr.text,thi.text,tmr.text, notice.id]
+    );
+  }
+
+  res.json({ message: "All existing notices translated!" });
+} catch (err) {
+  res.status(500).json({ error: err.message });
+}
+}
+
+
+
+
+
+    
 
 module.exports = {
   create,
@@ -216,5 +248,6 @@ module.exports = {
   remove,
   upload,
   markAsRead,
-  searchNotice
+  searchNotice,
+  allNotices
 };

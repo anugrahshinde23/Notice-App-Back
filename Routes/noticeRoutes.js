@@ -1,5 +1,5 @@
 const express = require('express');
-const { create, get, edit, remove, upload, markAsRead, searchNotice } = require('../Controllers/noticeControllers');
+const { create, get, edit, remove, upload, markAsRead, searchNotice, allNotices } = require('../Controllers/noticeControllers');
 const router = express.Router();
 const multer = require('multer');
 const { uploadNotice } = require('../Controllers/authControllers');
@@ -24,5 +24,6 @@ router.put('/edit/:id',edit)
 router.delete('/delete/:id',remove)
 router.post('/mark-read',markAsRead)
 router.get('/search', searchNotice)
+router.post('/translate-all-notices',allNotices)
 
 module.exports = router
