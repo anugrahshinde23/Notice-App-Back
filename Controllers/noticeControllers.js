@@ -7,7 +7,8 @@ const categorizeNotice = require("../functions/categorizeNotice");
 const { measureMemory } = require("vm");
 const admin = require('../firebase');
 const { response } = require("express");
-const translate = require('google-translate-open-api').default;
+const { default: translate } = require('google-translate-open-api');
+
 
 // Uploads folder ensure karna
 const uploadDir = path.join(__dirname, "..", "uploads");
@@ -32,12 +33,13 @@ const upload = multer({ storage: storage });
 async function translateText(text, lang) {
   try {
     const result = await translate(text, { to: lang });
-    return result.data[0]; // translated text
+    return result.data[0][0]; // translated text
   } catch (err) {
     console.error("Translation error:", err);
     return text; // fail hone par original text
   }
 }
+
 
 /**
  * Create Notice
