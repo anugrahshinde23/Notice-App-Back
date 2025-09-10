@@ -7,7 +7,7 @@ const categorizeNotice = require("../functions/categorizeNotice");
 const { measureMemory } = require("vm");
 const admin = require('../firebase');
 const { response } = require("express");
-const translate = require('@vitalets/google-translate-api').default
+const translate = require('google-translate-open-api').default;
 
 // Uploads folder ensure karna
 const uploadDir = path.join(__dirname, "..", "uploads");
@@ -26,6 +26,18 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+
+
+async function translateText(text, lang) {
+  try {
+    const result = await translate(text, { to: lang });
+    return result.data[0]; // translated text
+  } catch (err) {
+    console.error("Translation error:", err);
+    return text; // fail hone par original text
+  }
+}
 
 /**
  * Create Notice
@@ -54,16 +66,15 @@ const create = async (req, res) => {
         
         const category = categorizeNotice(title,content);  
         
-        const thi = await translate(title, {to : "hi"});
-        const tmr = await translate(title, {to : "mr"});
-        const hi = await translate(content, { to: "hi" });
-        const mr = await translate(content, { to: "mr" });
-
+        const title_hi = await translateText(title, "hi");
+        const title_mr = await translateText(title, "mr");
+        const content_hi = await translateText(content, "hi");
+        const content_mr = await translateText(content, "mr");
 
         const result = await db.query(
           `INSERT INTO notices(title, content, created_by, file_path, college_id, class_id, category,title_hi, title_mr, content_hi, content_mr) 
            VALUES($1, $2, $3, $4, $5, $6, $7 $8,$9,$10,$11) RETURNING *`,
-          [title, content, createdBy, filePath, college_id, classId, category, thi.text,tmr.text,hi.text,mr.text]
+          [title, content, createdBy, filePath, college_id, classId, category, title_hi, title_mr, content_hi, content_mr]
         );
 
     const students = await db.query(`SELECT id, fcm_token FROM users WHERE college_id=$1 and class_id=$2 and role=$3`,[college_id,classId,'student']);
