@@ -62,7 +62,7 @@ const create = async (req, res) => {
         
        
 
-        console.log(title_hi);
+        
 
         const result = await db.query(
           `INSERT INTO notices(title, content, created_by, file_path, college_id, class_id, category) 
