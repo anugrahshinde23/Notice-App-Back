@@ -187,7 +187,7 @@ const markAsRead = async(req,res) =>{
   }
 }
 
-const searchNotice =  async (req,res) => {
+const searchNotice = async (req, res) => {
   try {
     const query = req.query.q || "";
 
@@ -195,17 +195,19 @@ const searchNotice =  async (req,res) => {
       `SELECT id, title, content, created_at 
        FROM notices 
        WHERE title ILIKE $1 OR content ILIKE $1
-       ORDER BY created_at DESC`,
+       ORDER BY created_at DESC
+       LIMIT 10`,   // limit lagana zaroori hai
       [`%${query}%`]
     );
 
-    res.json(result.rows)
-    
+    res.json(result.rows);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
+
+
 
 module.exports = {
   create,
