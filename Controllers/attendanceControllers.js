@@ -45,7 +45,7 @@ const qrScan = async(req,res) =>{
             return res.status(400).json({message : "Attendance already marked for today"})
         }
 
-        const result = await db.query(`INSERT INTO attendance (user_id,date,status,time_in) VALUES($1,$2,$3,$4) RETURNING* `,[UserId,date,'present', new Date()]);
+        const result = await db.query(`INSERT INTO attendance (user_id,date,status,time_in) VALUES($1,$2,$3,$4) RETURNING* `,[UserId,date,'Present', new Date()]);
 
         res.json({message : "Attendance marked successfully"})
     } catch (err) {
