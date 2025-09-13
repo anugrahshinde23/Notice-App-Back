@@ -4,76 +4,112 @@ const crypto = require('crypto')
 
 const qrGenerate = async (req, res) => {
     try {
-      const { duration } = req.body; // duration in minutes
-      if (!duration) return res.status(400).json({ message: "Duration required" });
+      const { duration, subject_name } = req.body;
+      const teacherId = req.user.id; // JWT se aa raha hoga
   
-      const today = new Date().toISOString().split("T")[0];
+      if (!duration || !subject_name) {
+        return res.status(400).json({ message: "Duration & subject required" });
+      }
+  
+      const startTime = new Date();
+      const expiresAt = new Date(startTime.getTime() + duration * 60 * 1000);
+  
+      // 1. Lecture create karo
+      const lectureRes = await db.query(
+        `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [subject_name, teacherId, startTime, expiresAt]
+      );
+      const lectureId = lectureRes.rows[0].id;
+  
+      // 2. Token generate & save
       const token = crypto.randomBytes(12).toString("hex");
-      const expiresAt = new Date(Date.now() + duration * 60 * 1000); // duration in ms
-  
-      // save token in db
       await db.query(
-        `INSERT INTO qr_tokens (date, token, expires_at) 
-         VALUES ($1, $2, $3)
-         ON CONFLICT (date) DO UPDATE 
-         SET token = EXCLUDED.token, created_at = NOW(), expires_at = EXCLUDED.expires_at`,
-        [today, token, expiresAt]
+        `INSERT INTO qr_tokens (lecture_id, token, expires_at)
+         VALUES ($1, $2, $3)`,
+        [lectureId, token, expiresAt]
       );
   
-      // Schedule automatic deletion after lecture
+      // 3. Auto delete token after expiry
       setTimeout(async () => {
-        try {
-          await db.query(`DELETE FROM qr_tokens WHERE token = $1`, [token]);
-          console.log(`QR token ${token} expired and deleted automatically.`);
-        } catch (err) {
-          console.error("Error deleting QR token:", err);
-        }
-      }, duration * 60 * 1000); // only delete after full lecture
+        await db.query(`DELETE FROM qr_tokens WHERE token = $1`, [token]);
+        console.log(`QR for lecture ${lectureId} expired`);
+      }, duration * 60 * 1000);
   
-      const qrDataUrl = await QRCode.toDataURL(token);
-      res.json({ qrDataUrl, expiresAt });
+      const qrDataUrl = await QRCode.toDataURL(JSON.stringify({ lectureId, token }));
+      res.json({ qrDataUrl, expiresAt, lectureId });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
     }
   };
-
+  
+  
+  const qrScan = async (req, res) => {
+    try {
+      const { token } = req.body;
+      if (!token) return res.status(400).json({ message: "Token required" });
+  
+      // Token check
+      const q = await db.query(
+        `SELECT * FROM qr_tokens WHERE token = $1 AND expires_at > NOW()`,
+        [token]
+      );
+  
+      if (q.rows.length === 0) {
+        return res.status(400).json({ message: "Invalid or expired QR token" });
+      }
+  
+      const { lecture_id } = q.rows[0];
+      const userId = req.user.id;
+  
+      // Duplicate attendance check
+      const already = await db.query(
+        `SELECT 1 FROM attendance WHERE user_id=$1 AND lecture_id=$2`,
+        [userId, lecture_id]
+      );
+      if (already.rows.length > 0) {
+        return res.status(400).json({ message: "Attendance already marked for this lecture" });
+      }
+  
+      // Mark attendance
+      await db.query(
+        `INSERT INTO attendance (user_id, lecture_id, status, time_in)
+         VALUES($1, $2, $3, $4)`,
+        [userId, lecture_id, "Present", new Date()]
+      );
+  
+      res.json({ message: "Attendance marked successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server Error" });
+    }
+  };
 
   
-const qrScan = async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) return res.status(400).json({ message: "Token required" });
 
-    // Check if token exists AND not expired
-    const q = await db.query(`SELECT * FROM qr_tokens WHERE token = $1 AND expires_at > NOW()`, [token]);
+const createLecture = async(req,res) =>{
+    try {
+        const {subject_name,duration,teacherId} = req.body;
 
-    if (q.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid or expired QR token" });
+        const startTime = new Date();
+        const endTime = new Date(startTime.getTime() + duration * 60000);
+
+        const result = await pool.query(
+            `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time)
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [subject_name, teacherId, startTime, endTime]
+          );
+      
+          res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Failed to create lecture" });
     }
-
-    const tokenRow = q.rows[0];
-    const date = tokenRow.date;
-    const UserId = req.user.id;
-
-    // Check if student already marked attendance
-    const already = await db.query(`SELECT 1 FROM attendance WHERE user_id=$1 AND date=$2`, [UserId, date]);
-    if (already.rows.length > 0) {
-      return res.status(400).json({ message: "Attendance already marked for today" });
-    }
-
-    // Mark attendance
-    await db.query(`INSERT INTO attendance (user_id, date, status, time_in) VALUES($1, $2, $3, $4)`, [UserId, date, 'Present', new Date()]);
-
-    res.json({ message: "Attendance marked successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
+}
 
 module.exports = {
     qrGenerate,
-    qrScan
+    qrScan,
+    createLecture
 }
