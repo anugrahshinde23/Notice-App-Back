@@ -1,6 +1,6 @@
 require('dotenv').config();
 const QRCode = require('qrcode');
-const db = require('db');
+const db = require("../db")
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
