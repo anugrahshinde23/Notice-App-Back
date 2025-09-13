@@ -19,12 +19,14 @@ const noticeRoutes = require('./Routes/noticeRoutes')
 const authRoutes = require('./Routes/authRoutes')
 const collegeRoutes = require('./Routes/collegesRoutes')
 const commentRoutes = require('./Routes/commentRoute')
+const attendanceRoutes = require('./Routes/attendanceRoutes')
 
 
 app.use('/api',authRoutes)
 app.use('/notice',noticeRoutes)
 app.use('/info',collegeRoutes)
 app.use('/cmt',commentRoutes)
+app.use('/attendance',attendanceRoutes)
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
