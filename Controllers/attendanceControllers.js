@@ -108,8 +108,28 @@ const createLecture = async(req,res) =>{
     }
 }
 
+
+const getLectureAttendance = async (req, res) => {
+    try {
+      const { lectureId } = req.params;
+      const result = await db.query(
+        `SELECT a.id, u.name, u.email, a.status, a.time_in
+         FROM attendance a
+         JOIN users u ON a.user_id = u.id
+         WHERE a.lecture_id = $1`,
+        [lectureId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to fetch attendance" });
+    }
+  };
+  
+
 module.exports = {
     qrGenerate,
     qrScan,
-    createLecture
+    createLecture,
+    getLectureAttendance
 }
