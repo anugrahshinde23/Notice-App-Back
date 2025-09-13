@@ -6,3 +6,5 @@ const router = express.Router();
 
 router.post('/generate-qr',authenticateTeacher,qrGenerate);
 router.post('/marked',authenticateUser,qrScan);
+
+module.exports  = router
