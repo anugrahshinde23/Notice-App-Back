@@ -132,7 +132,10 @@ const getLectureReports = async(req,res) =>{
   
   // Lecture Details : 
   const lectureRes = await db.query(
-    `SELECT id, subject_name, start_time, end_time FROM lectures WHERE id=$1 AND teacher_id=$2`,[lectureId,teacherId]
+    `SELECT l.id, l.subject_name, l.start_time, l.end_time, c.name AS class_name
+    FROM lectures l
+    INNER JOIN classes c ON l.class_id = c.id
+    WHERE l.id = $1 AND l.teacher_id = $2`,[lectureId,teacherId]
   )
 
   if(lectureRes.rows.length == 0){
@@ -162,6 +165,7 @@ const getLectureReports = async(req,res) =>{
  res.json({
   lecture : {
     subject : lecture.subject_name,
+    class_name : lecture.class_name,
     date : new Date(lecture.start_time).toLocaleDateString("en-IN"),
     start_time : new Date(lecture.start_time).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true}),
     end_time : new Date(lecture.end_time).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true})
