@@ -143,9 +143,9 @@ const getLectureReports = async(req,res) =>{
  res.json({
   lecture : {
     subject : lecture.subject_name,
-    date : new Date(lecture.startTime).toLocaleDateString("en-IN"),
-    start_time : new Date(lecture.startTime).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true}),
-    end_time : new Date(lecture.endTime).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true})
+    date : new Date(lecture.start_time).toLocaleDateString("en-IN"),
+    start_time : new Date(lecture.start_time).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true}),
+    end_time : new Date(lecture.end_time).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true})
   },
 
   students : studentAttendance.map(s => ({
