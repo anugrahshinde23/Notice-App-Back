@@ -169,6 +169,6 @@ const getLectureReports = async(req,res) =>{
 module.exports = {
     qrGenerate,
     qrScan,
-    createLecture,
+    // createLecture,
     getLectureReports
 }
