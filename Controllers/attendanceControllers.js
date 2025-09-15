@@ -116,7 +116,7 @@ const getLectureReports = async(req,res) =>{
   
   // Lecture Details : 
   const lectureRes = await db.query(
-    `SELECT id, subject_name, start_time, end_time FROM lecture WHERE id=$1 AND teacher_id=$2`,[lectureId,teacherId]
+    `SELECT id, subject_name, start_time, end_time FROM lectures WHERE id=$1 AND teacher_id=$2`,[lectureId,teacherId]
   )
 
   if(lectureRes.rows.length == 0){
