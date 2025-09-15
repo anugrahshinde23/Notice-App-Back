@@ -134,6 +134,9 @@ const getLectureReports = async(req,res) =>{
   FROM users u
   LEFT JOIN attendance a ON u.id = a.user_id AND a.lecture_id = $1
   INNER JOIN lectures l ON l.id = $1
+  WHERE u.role='student'
+  AND u.class_id = l.class_id
+  AND u.college_id = l.college_id
   ORDER BY u.name ASC
   `,[lectureId]
  )
