@@ -4,7 +4,7 @@ const crypto = require('crypto')
 
 const qrGenerate = async (req, res) => {
     try {
-      const { duration, subject_name } = req.body;
+      const { duration, subject_name, classId, collegeId } = req.body;
       const teacherId = req.user.id; // JWT se aa raha hoga
   
       if (!duration || !subject_name) {
@@ -16,9 +16,9 @@ const qrGenerate = async (req, res) => {
   
       // 1. Lecture create karo
       const lectureRes = await db.query(
-        `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time)
+        `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time,class_id,college_id)
          VALUES ($1, $2, $3, $4) RETURNING *`,
-        [subject_name, teacherId, startTime, expiresAt]
+        [subject_name, teacherId, startTime, expiresAt, classId,collegeId]
       );
       const lectureId = lectureRes.rows[0].id;
   
