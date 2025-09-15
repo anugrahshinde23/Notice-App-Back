@@ -26,7 +26,30 @@ const getClasses = async(req,res) =>{
     }
 }
 
+const getClassesForAttendance = async(req,res) =>{
+    try {
+        const teacherId = req.user.id;
+
+        const teacherRes = await db.query(`SELECT college_id FROM users WHERE id=$1`,[teacherId])
+
+        if(teacherRes.rows.length == 0){
+            return res.status(404).json({message : "Teacher not found"})
+        }
+
+        const collegeId = teacherRes.rows[0].college_id
+
+        const collegeRes = await db.query(`SELECT * FROM classes WHERE college_id=$1 ORDER BY name ASC`,[collegeId]);
+
+        res.status(200).json({message : "Classes fetched successfully", classes : collegeRes.rows})
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({message : "Failed to fetch classes"})
+        
+    }
+}
+
 module.exports = {
     getColleges,
-    getClasses
+    getClasses,
+    getClassesForAttendance
 }
