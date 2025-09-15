@@ -4,12 +4,28 @@ const crypto = require('crypto')
 
 const qrGenerate = async (req, res) => {
     try {
-      const { duration, subject_name, classId, collegeId } = req.body;
-      const teacherId = req.user.id; // JWT se aa raha hoga
+      const { duration, subject_name, classId } = req.body;
+      const teacherId = req.user.id; 
+
+
   
       if (!duration || !subject_name) {
         return res.status(400).json({ message: "Duration & subject required" });
       }
+
+      // college id : 
+      const teacherRes = await db.query(`
+        SELECT college_id from users WHERE id=$1
+        `,[teacherId]);
+
+        if(teacherRes.rows.length == 0){
+          return res.status(404).json({message : "Teacher not found"})
+        }
+
+        const collegeId = teacherRes.rows[0].college_id;
+
+
+        
   
       const startTime = new Date();
       const expiresAt = new Date(startTime.getTime() + duration * 60 * 1000);
