@@ -132,7 +132,7 @@ const getLectureReports = async(req,res) =>{
   COALESCE(a.status, 'ABSENT') AS status,
   a.time_in
   FROM users u
-  LEFT JOIN attendance a ON u.id = a.user_id AND a.lecture_id = $1,
+  LEFT JOIN attendance a ON u.id = a.user_id AND a.lecture_id = $1
   INNER JOIN lectures l ON l.id = $1
   ORDER BY u.name ASC
   `,[lectureId]
