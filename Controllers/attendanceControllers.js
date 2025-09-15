@@ -97,7 +97,7 @@ const createLecture = async(req,res) =>{
 
         const result = await pool.query(
             `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time)
-             VALUES ($1, $2, $3, $4) RETURNING *`,
+             VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
             [subject_name, teacherId, startTime, endTime]
           );
       
