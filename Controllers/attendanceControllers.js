@@ -17,7 +17,7 @@ const qrGenerate = async (req, res) => {
       // 1. Lecture create karo
       const lectureRes = await db.query(
         `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time,class_id,college_id)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
+         VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
         [subject_name, teacherId, startTime, expiresAt, classId,collegeId]
       );
       const lectureId = lectureRes.rows[0].id;
@@ -88,25 +88,25 @@ const qrGenerate = async (req, res) => {
 
   
 
-const createLecture = async(req,res) =>{
-    try {
-        const {subject_name,duration,teacherId} = req.body;
+// const createLecture = async(req,res) =>{
+//     try {
+//         const {subject_name,duration,teacherId} = req.body;
 
-        const startTime = new Date();
-        const endTime = new Date(startTime.getTime() + duration * 60000);
+//         const startTime = new Date();
+//         const endTime = new Date(startTime.getTime() + duration * 60000);
 
-        const result = await pool.query(
-            `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time)
-             VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
-            [subject_name, teacherId, startTime, endTime]
-          );
+//         const result = await pool.query(
+//             `INSERT INTO lectures (subject_name, teacher_id, start_time, end_time, class_id,college_id)
+//              VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
+//             [subject_name, teacherId, startTime, endTime]
+//           );
       
-          res.json(result.rows[0]);
-    } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Failed to create lecture" });
-    }
-}
+//           res.json(result.rows[0]);
+//     } catch (err) {
+//         console.error(err)
+//         res.status(500).json({ error: "Failed to create lecture" });
+//     }
+// }
 
 
 const getLectureReports = async(req,res) =>{
