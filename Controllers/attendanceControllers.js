@@ -109,27 +109,63 @@ const createLecture = async(req,res) =>{
 }
 
 
-const getLectureAttendance = async (req, res) => {
-    try {
-      const { lectureId } = req.params;
-      const result = await db.query(
-        `SELECT a.id, u.name, u.email, a.status, a.time_in
-         FROM attendance a
-         JOIN users u ON a.user_id = u.id
-         WHERE a.lecture_id = $1`,
-        [lectureId]
-      );
-      res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Failed to fetch attendance" });
-    }
-  };
+const getLectureReports = async(req,res) =>{
+ try {
+  const lectureId = req.params.lectureId;
+  const teacherId = req.user.id;
+  
+  // Lecture Details : 
+  const lectureRes = await db.query(
+    `SELECT id, subject_name, start_time, end_time FROM lecture WHERE id=$1 AND teacher_id=$2`,[lectureId,teacherId]
+  )
+
+  if(lectureRes.rows.length == 0){
+    return res.status(404).json({message : "Lecture not found"})
+  }
+
+  const lecture = lectureRes.rows[0];
+
+  // Attendance with student details : 
+ const attendanceRes = await db.query(
+  `SELECT u.name AS student_name,
+  l.subject_name,
+  COALESCE(a.status, 'ABSENT') AS status,
+  a.time_in
+  FROM users u
+  LEFT JOIN attendance a ON u.id = a.user_id AND a.lecture_id = $1,
+  INNER JOIN lectures l ON l.id = $1
+  ORDER BY u.name ASC
+  `,[lectureId]
+ )
+
+ const studentAttendance = attendanceRes.rows;
+
+ res.json({
+  lecture : {
+    subject : lecture.subject_name,
+    date : new Date(lecture.startTime).toLocaleDateString("en-IN"),
+    start_time : new Date(lecture.startTime).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true}),
+    end_time : new Date(lecture.endTime).toLocaleTimeString("en-IN", {hour : "2-digit", minute : "2-digit", hour12 : true})
+  },
+
+  students : studentAttendance.map(s => ({
+    student_name : s.student_name,
+    subject : s.subject_name,
+    status : s.status,
+    time_in : s.time_in ? new Date(s.time_in).toLocaleTimeString("en-IN",{hour : "2-digit", minute : "2-digit" , hour12 : true}) : "-"
+  }))
+ })
+ } catch (err) {
+  console.error(err)
+  res.json({message : "Server Error"})
+  
+ }
+}
   
 
 module.exports = {
     qrGenerate,
     qrScan,
     createLecture,
-    getLectureAttendance
+    getLectureReports
 }
