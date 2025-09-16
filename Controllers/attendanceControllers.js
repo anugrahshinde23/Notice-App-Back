@@ -184,11 +184,36 @@ const getLectureReports = async(req,res) =>{
   
  }
 }
+
+
+// GET /attendance/teacher-lectures
+const getTeacherLectures = async (req, res) => {
+  try {
+    const teacherId = req.user.id; // JWT se aa raha hoga
+
+    const result = await db.query(
+      `SELECT l.id, l.subject_name, l.start_time, l.end_time, c.name AS class_name
+       FROM lectures l
+       INNER JOIN classes c ON l.class_id = c.id
+       WHERE l.teacher_id = $1
+       ORDER BY l.start_time DESC`,
+      [teacherId]
+    );
+
+    res.status(200).json({ lectures: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch lectures" });
+  }
+};
+
+
   
 
 module.exports = {
     qrGenerate,
     qrScan,
     // createLecture,
-    getLectureReports
+    getLectureReports,
+    getTeacherLectures
 }
