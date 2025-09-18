@@ -1,6 +1,8 @@
 const QRCode = require('qrcode')
 const db = require("../db")
 const crypto = require('crypto')
+const bcrypt = require('bcrypt')
+
 
 const qrGenerate = async (req, res) => {
     try {
@@ -37,13 +39,19 @@ const qrGenerate = async (req, res) => {
         [subject_name, teacherId, startTime, expiresAt, classId,collegeId]
       );
       const lectureId = lectureRes.rows[0].id;
-  
+
+      // 4 digit code generate and save 
+
+       const code = Math.floor(1000 + Math.random() * 9000).toString();
+       const codeHash = await bcrypt.hash(code,10);
+
+
       // 2. Token generate & save
       const token = crypto.randomBytes(12).toString("hex");
       await db.query(
-        `INSERT INTO qr_tokens (lecture_id, token, expires_at)
-         VALUES ($1, $2, $3)`,
-        [lectureId, token, expiresAt]
+        `INSERT INTO qr_tokens (lecture_id, token, expires_at,hash_code)
+         VALUES ($1, $2, $3,$4)`,
+        [lectureId, token, expiresAt,codeHash]
       );
   
       // 3. Auto delete token after expiry
@@ -53,7 +61,7 @@ const qrGenerate = async (req, res) => {
       }, duration * 60 * 1000);
   
       const qrDataUrl = await QRCode.toDataURL(JSON.stringify({ lectureId, token }));
-      res.json({ qrDataUrl, expiresAt, lectureId });
+      res.json({ qrDataUrl, expiresAt, lectureId,code });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
@@ -63,7 +71,7 @@ const qrGenerate = async (req, res) => {
   
   const qrScan = async (req, res) => {
     try {
-      const { token } = req.body;
+      const { token, code } = req.body;
       if (!token) return res.status(400).json({ message: "Token required" });
   
       // Token check
@@ -76,7 +84,15 @@ const qrGenerate = async (req, res) => {
         return res.status(400).json({ message: "Invalid or expired QR token" });
       }
   
-      const { lecture_id } = q.rows[0];
+      const { lecture_id,hash_code } = q.rows[0];
+
+       
+       const match = await bcrypt.compare(code,hash_code)
+
+       if(!match){
+        return res.status(400).json({message : "Invalid code"})
+       }
+
       const userId = req.user.id;
   
       // Duplicate attendance check
