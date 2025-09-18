@@ -2,7 +2,7 @@ const db = require('../db');
 
 const feedBack = async (req, res) => {
   try {
-    console.log("REQ BODY =>", req.body); // Debugging
+    
 
     const { feedback } = req.body;
 
@@ -11,7 +11,7 @@ const feedBack = async (req, res) => {
       [feedback]
     );
 
-    console.log("INSERT RESULT =>", result.rows[0]); // Debugging
+    
 
     res.status(200).json({ 
       message: "Feedback saved successfully", 
